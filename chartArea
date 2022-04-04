@@ -1,0 +1,83 @@
+
+library(ggplot2)
+library(dplyr)
+
+#BASE
+base_cd <- read.csv("~/CD/base_cd.csv", encoding = "UTF-8")
+
+
+base<- base_cd %>%
+  mutate(Mes=case_when(
+    Mes=="ENERO"~"Ene",
+    Mes=="FEBRERO"~"Feb",
+    Mes=="MARZO"~"Mar",
+    Mes=="ABRIL"~"Abr",
+    Mes=="MAYO"~"May",
+    Mes=="JUNIO"~"Jun",
+    Mes=="JULIO"~"Jul",
+    Mes=="AGOSTO"~"Ago",
+    Mes=="SEPTIEMBRE"~"Sep",
+    Mes=="OCTUBRE"~"Oct",
+    Mes=="NOVIEMBRE"~"Nov",
+    Mes=="DICIEMBRE"~"Dic"),
+    Mes=factor(Mes,
+                 levels=c("Ene", "Feb", "Mar", "Abr", "May", "Jun",
+                          "Jul", "Ago", "Sep", "Oct", "Nov", "Dic")))%>% 
+  mutate(Institución=case_when(  
+    Institución..s.CLUES.=="ISSSTE" ~ "ISSSTE",
+    Institución..s.CLUES.=="IMSS" ~ "IMSS",
+    Institución..s.CLUES.=="INSABI (Secretaría de Salud)" ~ "INSABI (Secretaría de Salud)",
+    Institución..s.CLUES.=="PEMEX" ~ "PEMEX",
+    Institución..s.CLUES.=="Secretaría de Marina" ~ "Secretaria de Marina",
+    Institución..s.CLUES.=="Servicios Médicos Estatales" ~ "Servicio Médicos Estatales",
+    Institución..s.CLUES.=="PRIVADOS" ~ "Privado",
+    Institución..s.CLUES.=="FISCALIA GENERAL DEL ESTADO" ~ "Otro",
+    Institución..s.CLUES.=="EN TODOS LADOS" ~ "Otro",
+    Institución..s.CLUES.=="IMSS-BIENESTAR" ~ "IMSS-BIENESTAR",
+    Institución..s.CLUES.=="NA" ~ "NA",
+    Institución..s.CLUES.=="DIF" ~ "Otro",
+    Institución..s.CLUES.=="SEDENA" ~ "Sedena",
+    Institución..s.CLUES.=="Servicios Médicos Universitarios" ~ "Otro",
+    Institución..s.CLUES.=="Servicios Médicos Municipales" ~ "Otro",
+    Institución..s.CLUES.=="Cruz Roja" ~ "Otro",
+    Institución..s.CLUES.=="Secretaría de Comunicaciones y Transportes" ~ "Otro")) %>% 
+  
+  group_by(Año, Mes, Institución) %>% 
+  summarise(Reportes = n())
+
+#Borrar NA
+base <- base[!is.na(base$Institución),]
+base <- base[!is.na(base$Mes),]
+base$Año <- paste(base$Mes, base$Año, sep = " ")
+
+
+#LEVELS
+base<-base %>%
+  mutate(Año=factor(Año,
+                    levels=c("Ene 2019", "Feb 2019", "Mar 2019", "Abr 2019", "May 2019", "Jun 2019",
+                             "Jul 2019", "Agon 2019", "Sep 2019", "Oct 2019", "Nov 2019", "Dic 2019",
+                             "Ene 2020", "Feb 2020", "Mar 2020", "Abr 2020", "May 2020", "Jun 2020",
+                             "Jul 2020", "Agon 2020", "Sep 2020", "Oct 2020", "Nov 2020", "Dic 2020",
+                             "Ene 2021", "Feb 2021", "Mar 2021", "Abr 2021", "May 2021", "Jun 2021",
+                             "Jul 2021", "Agon 2021", "Sep 2021", "Oct 2021", "Nov 2021", "Dic 2021")))
+
+
+#GRAFICO DE AREAS
+ggplot(base) +
+  aes(x = Año, y=Reportes, group =Institución, fill=Institución) +
+  geom_area() +
+  labs(x="", y=" ", fill="")+
+  theme_minimal() +
+  theme(legend.position = "bottom")+
+  theme(strip.background = element_rect(color="black", fill="white", size=1.5),
+        strip.placement = 'outside',
+        strip.background.x = element_blank(),
+        strip.text.x = element_text(size = 7, angle=90),
+        strip.text.y = element_text(size = 7, angle=90))+
+  theme(panel.grid.minor.x = element_blank(),
+        panel.spacing.x = unit(0,"line")) +
+  theme(axis.text.x = element_text(angle = 90, hjust=.5, size=7),
+        axis.title.y = element_text(face = "bold"),
+        axis.text = element_text(size = 7, colour="black"))
+
+       
